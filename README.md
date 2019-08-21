@@ -14,7 +14,7 @@ cd ./ngspice-30/
 make -j4
 sudo make install
 sudo ldconfig
-``` 
+```
 Устанавливаем MySpice:
 
 `pip3 install git+git://github.com/LukyanovM/MySpice.git`
@@ -30,10 +30,105 @@ sudo ldconfig
 
 `pip install git+git://github.com/LukyanovM/MySpice.git`
 
+Если устанавливать из локального источника то:
+
+`python setup.py install`
+
+Так же можно не устанавливать восе. Для этого просто подключить модуль, с извесным местом расположения, к нужному файлу. Например если модуль лежит в каталоге запускаемого приложения, в папке MySpice то импорт в приложение:
+
+`import MySpice.MySpice`
+
+Удаление пакета:
+
+`pip uninstall MySpice`
+
+## Состав модуля
+
+`setup.py`
+
+`MySpice`
+
+​	`__init__`.py
+
+​	`MySpice.py`
+
+`README.md`
+
+`LICENSE`
+
+## Формат cir файла
+
+Файлы можно получать экспортом схемы из Qucs нажатием клавиши F2. 
+
+Поскольку в редакторе используется тот же симулятор, что и при построении ВАХ в python все модели электронных компонентов доступные в редакторе будут моделироваться и в ПО.
+
+Сохраняются они в `\user\.qucs\spice4qucs\spice4qucs.cir`
+
+Пример:
+
+```
+* Scheme
+C1 _net1 0 10000N 
+D_1 _net1 0 DMOD_D_1N4148_1
+D_2 0 _net1 DMOD_D_1N4148_1
+R1 Input _net1  1000
+```
+
+`*  Scheme`  - первая строка обязательно коментарий. 
+Далее произвольная схема соединения.  
+
+Проводник `Input` и `0` должны быть обязательно.
+
+
+
 
 ## Интерфейс
-1. Функция LoadFile() принимает путь к файлу в формате spice (.cir). Файлы для тестов генерировались в qucs-s версии 0.21. Реализован базовый функционал, секции .include, .subckt, .control игнорируются.
-2. Функция SaveFile() сохраняет данные в формате csv с разделителем ";". Первая строка - напряжение, вторая - сила тока.
-3. Функция CreateCVC() проводит анализ переходного процесса на первом цикле длительностью определяемой частотой в струкутре InitData. Возвращает экземпляр класса PySpice.CircuitSimulation, к которому можно обратиться напрямую для получения напряжения - **analysis.input_dummy**, для получения силы тока - **analysis.VCurrent**.
 
-В папке examples лежат примеры.
+1. Функция `LoadFile()`. 
+
+   `circuit = spice.LoadFile('пример1.cir')` принимает путь к файлу в формате spice (.cir). Файлы для тестов генерировались в qucs-s версии 0.21. Реализован базовый функционал, секции .include, .subckt, .control игнорируются. Результат схема соединения.
+
+2. Функция `Init_Data()`.
+
+   `input_data = spice.Init_Data(частота, напряжение, предустановленный_резистор, шум)`
+
+3. Функция `CreateCVC()`.  
+
+   analysis = spice.CreateCVC(circuit, input_data, количество_точек, номер_периода)` проводит анализ переходного процесса на цикле определяемом `номер_периода` длительностью определяемой частотой в струкутре `input_data`. Возвращает экземпляр класса `PySpice.CircuitSimulation`, к которому можно обратиться напрямую для получения напряжения - **analysis.input_dummy**, для получения силы тока - **analysis.VCurrent**.
+
+4. Функция SaveFile().
+
+   `spice.SaveFile(analysis, "пример1.csv")` сохраняет данные в формате csv с разделителем ";". Первая строка - напряжение, вторая - сила тока.
+
+   
+
+   Пример кода:
+
+   ```
+   import matplotlib.pyplot as plt
+   
+   import PySpice.Logging.Logging as Logging
+   from PySpice.Probe.Plot import plot
+   
+   from MySpice import MySpice as spice
+   
+   logger = Logging.setup_logging()
+   # Загрузка файла со схемой
+   circuit = spice.LoadFile('пример1.cir')
+   # Загрузка данных генератора
+   input_data = spice.Init_Data(10, 5, 0, 80)
+   # Получение ВАХ
+   analysis = spice.CreateCVC(circuit, input_data, 100, 10)
+   # Сохранение файла со значением тока и напряжения
+   spice.SaveFile(analysis, "пример1.csv")
+   
+   # Отображение графика ВАХ
+   figure1 = plt.figure(1, (20, 10))
+   plt.grid()
+   plt.plot(analysis.input_dummy, analysis.VCurrent)
+   plt.xlabel('Напряжение [В]')
+   plt.ylabel('Сила тока [А]')
+   plt.show()
+   ```
+
+   
