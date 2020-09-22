@@ -30,6 +30,7 @@ class Init_Data:
 def LoadFile(path):
     parser = MySpiceParser(path=path)
     circuit = parser.build_circuit()
+    #print(path)
     return circuit
 
 
@@ -43,10 +44,6 @@ def SaveFile(analysis, path):
 
 def CreateCVC(circuit, input_data, lendata, cycle=1):
     # lendata не может принимать значения меньше 59
-    # if lendata>86:
-    #    lendata = lendata - 8
-    # else:
-    #    lendata = lendata - 9
     period = 1 / input_data.F
     rms_voltage = input_data.V / math.sqrt(2)
     circuit.R('cs', 'input', 'input_dummy', input_data.Rcs)
@@ -55,7 +52,31 @@ def CreateCVC(circuit, input_data, lendata, cycle=1):
     analysis = simulator.transient(step_time=period / lendata, end_time=period * cycle)
     analysis.input_dummy = analysis.input_dummy[len(analysis.input_dummy)-lendata:len(analysis.input_dummy)]
     analysis.VCurrent = analysis.VCurrent[len(analysis.VCurrent)-lendata:len(analysis.VCurrent)]
-# Расчитываем шум независмо для тока и напряжения исходя из среднеквадратичных значений и одинакового SNR
+    # Расчитываем шум независмо для тока и напряжения исходя из среднеквадратичных значений и одинакового SNR
+    avg_V_db = 10 * numpy.log10(numpy.mean(numpy.array(analysis.input_dummy, dtype=float) ** 2))
+    avg_Vnoise_db = avg_V_db - input_data.SNR
+    Vnoise = numpy.random.normal(0, numpy.sqrt(10 ** (avg_Vnoise_db / 10)), len(analysis.input_dummy))
+    analysis.input_dummy = numpy.array(analysis.input_dummy, dtype=float) + Vnoise
+    avg_I_db = 10 * numpy.log10(numpy.mean(numpy.array(analysis.VCurrent, dtype=float) ** 2))
+    avg_Inoise_db = avg_I_db - input_data.SNR
+    Inoise = numpy.random.normal(0, numpy.sqrt(10 ** (avg_Inoise_db / 10)), len(analysis.VCurrent))
+    analysis.VCurrent = numpy.array(analysis.VCurrent, dtype=float) + Inoise
+    return analysis
+    
+    
+def CreateCVC1(circuit, input_data, lendata, name="input_dummy", cycle=1):
+    # lendata не может принимать значения меньше 59
+    period = 1 / input_data.F
+    rms_voltage = input_data.V / math.sqrt(2)
+    circuit.R('cs', 'input', 'input_dummy', input_data.Rcs)
+    circuit.AcLine('Current', circuit.gnd, 'input_dummy', rms_voltage=rms_voltage, frequency=input_data.F)
+    simulator = circuit.simulator()
+    analysis = simulator.transient(step_time=period / lendata, end_time=period * cycle)
+    analysis.input_dummy=analysis[name]
+    analysis.input_dummy = analysis.input_dummy[len(analysis.input_dummy)-lendata:len(analysis.input_dummy)]
+    analysis.input_dummy = analysis.input_dummy[len(analysis.input_dummy)-lendata:len(analysis.input_dummy)]
+    analysis.VCurrent = analysis.VCurrent[len(analysis.VCurrent)-lendata:len(analysis.VCurrent)]
+    # Расчитываем шум независмо для тока и напряжения исходя из среднеквадратичных значений и одинакового SNR
     avg_V_db = 10 * numpy.log10(numpy.mean(numpy.array(analysis.input_dummy, dtype=float) ** 2))
     avg_Vnoise_db = avg_V_db - input_data.SNR
     Vnoise = numpy.random.normal(0, numpy.sqrt(10 ** (avg_Vnoise_db / 10)), len(analysis.input_dummy))
