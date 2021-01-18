@@ -17,7 +17,7 @@ sudo ldconfig
 ```
 Устанавливаем MySpice:
 
-`pip3 install git+git://github.com/LukyanovM/MySpice.git`
+`pip3 install git+git://github.com/EPC-MSU/MySpice`
 
 #### Windows
 - Скачиваем ngspice для windows https://sourceforge.net/projects/ngspice/files/ng-spice-rework/30/ngspice-30_dll_64.zip/download. Распаковываем, папку Spice64_dll помещаем в C:\Program Files .
@@ -32,7 +32,7 @@ sudo ldconfig
 - И далее ставим уже MySpice:
 
 
-`pip install git+git://github.com/LukyanovM/MySpice.git`
+`pip install git+git://github.com/EPC-MSU/MySpice`
 
 Если устанавливать из локального источника то:
 
