@@ -12,7 +12,7 @@ setuptools.setup(
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/LukyanovM/MySpice",
+    url="https://github.com/EPC-MSU/MySpice`",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
