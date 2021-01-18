@@ -20,13 +20,17 @@ sudo ldconfig
 `pip3 install git+git://github.com/LukyanovM/MySpice.git`
 
 #### Windows
-Скачиваем ngspice для windows https://sourceforge.net/projects/ngspice/files/ng-spice-rework/30/ngspice-30_dll_64.zip/download. Распаковываем, папку Spice64_dll помещаем в C:\Program Files .
+- Скачиваем ngspice для windows https://sourceforge.net/projects/ngspice/files/ng-spice-rework/30/ngspice-30_dll_64.zip/download. Распаковываем, папку Spice64_dll помещаем в C:\Program Files .
 
-Устанавливаем miniconda https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe . Запускаем *Anaconda Prompt (Miniconda3)* и ставим git:
+
+- Устанавливаем miniconda https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe . Запускаем *Anaconda Prompt (Miniconda3)* и ставим git:
 
 `conda install git`
 
-И далее ставим уже MySpice:
+- Если без Miniconda3, то  установить Python 3.6 64 бит для всех пользователей. Далее установить зависимости с помощью ***pip install -r requirements.txt***
+
+- И далее ставим уже MySpice:
+
 
 `pip install git+git://github.com/LukyanovM/MySpice.git`
 
@@ -92,11 +96,15 @@ R1 Input _net1  1000
 
    `input_data = spice.Init_Data(частота, напряжение, предустановленный_резистор, шум)`
 
-3. Функция `CreateCVC()`.  
+3. Функция `CreateCVC()`. 
 
-   analysis = spice.CreateCVC(circuit, input_data, количество_точек, номер_периода)` проводит анализ переходного процесса на цикле определяемом `номер_периода` длительностью определяемой частотой в струкутре `input_data`. Возвращает экземпляр класса `PySpice.CircuitSimulation`, к которому можно обратиться напрямую для получения напряжения - **analysis.input_dummy**, для получения силы тока - **analysis.VCurrent**.
+   analysis = spice.CreateCVC(circuit, input_data, lendata, cycle=1)` проводит анализ переходного процесса на цикле определяемом `номер_периода` длительностью определяемой частотой в струкутре `input_data`. Возвращает экземпляр класса `PySpice.CircuitSimulation`, к которому можно обратиться напрямую для получения напряжения - analysis.input_dummy, для получения силы тока - analysis.VCurrent.`
 
-4. Функция SaveFile().
+4. Функция `CreateCVC1()`. 
+
+   analysis = spice.CreateCVC1(circuit, input_data, lendata, name="input_dummy", cycle=1)` проводит анализ переходного процесса на цикле определяемом `номер_периода` длительностью определяемой частотой в струкутре `input_data`. Возвращает экземпляр класса `PySpice.CircuitSimulation`, к которому можно обратиться напрямую для получения напряжения - analysis.input_dummy, для получения силы тока - analysis.VCurrent.` Отличается от предыдущей функции наличием параметра  **name**. Если параметр равен параметру по умолчанию **name="input_dummy"**, то поведение функции полностью аналогично предыдущей. Данный параметр может быть равен имени любого проводника существующего в схеме. Если параметр равен  **name="input"** то массив напряжений для ВАХ будет получен без учета падения напряжения на токоограничивающем резисторе. 
+
+5. Функция SaveFile().
 
    `spice.SaveFile(analysis, "пример1.csv")` сохраняет данные в формате csv с разделителем ";". Первая строка - напряжение, вторая - сила тока.
 

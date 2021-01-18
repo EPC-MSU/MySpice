@@ -1,3 +1,5 @@
-numpy==1.17.0
-PySpice==1.3.2
+matplotlib==2.1.0
+numpy==1.19.4
+scipy==1.5.4
 dataclasses==0.6
+PySpice==1.3.2
